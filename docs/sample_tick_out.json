@@ -1,0 +1,16 @@
+{
+    "period_id": "1SEC",
+    "time_period_start": "2025-05-19T08:34:40.0000000Z",
+    "time_period_end": "2025-05-19T08:34:41.0000000Z",
+    "time_open": "2025-05-19T08:34:40.0280370Z",
+    "time_close": "2025-05-19T08:34:40.0280370Z",
+    "price_open": 103149.645,
+    "price_high": 103149.645,
+    "price_low": 103149.645,
+    "price_close": 103149.645,
+    "volume_traded": 0,
+    "trades_count": 0,
+    "symbol_id": "COINBASE_SPOT_BTC_USDT",
+    "sequence": 2738271,
+    "type": "ohlcv"
+}

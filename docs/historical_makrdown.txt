@@ -1,0 +1,14 @@
+HISTORICAL DATA SPEC:
+--------------------
+| Field Name           | Type       | Description                                                           |
+| -------------------- | -------    | --------------------------------------------------------------------- |
+| `open_ts`            | `int`      | Unix timestamp of the bar (start of the 1-minute interval)            |
+| `open`               | `float`    | Opening price at the beginning of the interval, in quote asset (USDT) |
+| `high`               | `float`    | Highest price reached during the interval                             |
+| `low`                | `float`    | Lowest price reached during the interval                              |
+| `close`              | `float`    | Last price traded in the interval                                     |
+| `volume_base`        | `float`    | Total trading volume during the interval, in base asset (BTC)         |
+| `taker_quote_volume` | `float`    | Volume of quote asset (USDT) bought by takers during the interval     |
+| `taker_base_volume`  | `float`    | Volume of base asset (BTC) bought by takers during the interval       |
+| `volume_quote`       | `float`    | Total trading volume during the interval, in quote asset (USDT)       |
+| `trades`             | `int`      | Total number of trades that occurred during the interval              |

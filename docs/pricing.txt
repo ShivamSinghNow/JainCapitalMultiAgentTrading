@@ -1,0 +1,57 @@
+ASSUMING CURRENT SYSTEM:
+-----------------------
+(1 tick message * 436 bytes) + (15 quote messages * 268 bytes) = 4456 bytes per second = 0.004456 mb per second
+
+=> Redpanda would be $143.25 per month
+
+
+0.004456 * 60 * 60 * 24 = 292.984 mb per day at $1 per gb
+
+=> CoinAPI would be ~$0.30 per day = $9 per month
+
+-------------------------------
+=> Total would be $152 per month
+-------------------------------
+
+
+ASSUMING L2 ORDER BOOK:
+----------------------
+Assuming 5 orders per side in level 2 order book, 1 order book message = 815 bytes
+
+815 * 15 + 436 = 12661 bytes per second = 0.012661 mb per second
+
+0.012661 * 60 * 60 * 24 = 1093.9104 mb per day at $0.0625 per mb
+
+=> CoinAPI would be ~$70 per day
+=> get monthly plane of $250 per month
+
+----------------------------
+=> Total = $393.25 per month
+----------------------------
+
+
+ASSUMING 5K MSG/SEC of tier 1:
+-----------------------------
+Now assuming 5000 msg/second at ~400 bytes per message = 2,000,000 bytes per second = 2 mb per second
+
+At 2 mb per sec write and 4 mb per second read
+
+=> Redpanda would be $831.87 per month
+
+2 * 60 * 60 * 24 = 172800 mb per day = 172.8 gb per day
+
+172.8 - 128 = 45.2
+45.2 * 0.25 = $11.3 per day over $250 monthly 
+
+11.3 * ~30 = 339 + 250 = 589
+
+=> get $600 CoinAPI monthly package
+
+------------------------------------
+=> Total would be $1431.87 per month
+------------------------------------
+
+
+ASSUMING 5K MSG/SEC of tier 1:
+-----------------------------
+Would need custom monthly plan with CoinAPI

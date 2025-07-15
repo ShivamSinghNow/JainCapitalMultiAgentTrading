@@ -1,0 +1,105 @@
+INSTRUCTIONS:
+------------
+1. Ensure main.py is running all different webssockets on different threads
+    Change ticker to whatever ticker requesting data
+
+2. Run main.py
+    If runniung for multiple assets follow these instructions:
+        A. Copy the code under "if __name__ == '__main__':"
+        B. Paste it below the current code
+        C. Change the numbers after the t's to consecutive numbers 
+        D. Change the word 'ticker' to whatever coin you want
+            EX. for ETH
+                # checking if topics are created in redpanda already, creating if not
+                create_topics('ETH')
+
+                # creating individual threads per websocket stream
+                t3 = Thread(target = stream_tick, args = ('ETH', duration))
+                t4 = Thread(target = stream_ob, args = ('ETH', duration)) 
+
+                # starting and joining threads
+                t3.start()
+                t4.start()
+
+                t3.join()
+                t4.join()
+
+3. Watch terminal to ensure topics are created
+   Ex. "Topic already exists"
+
+4. Watch terminal to ensure both book5 and ohlcv messages are being sent
+    (check type at bottom of each json message)
+
+5. Ensure messages are being uploaded ot both tick and order book topics in redpanda
+    Ex. "Sent to topic 'BTC_ob_v1' at offset 275"
+
+6. Go to our redpanda website
+    A. Login to our redpanda account using google
+        Link: https://cloud.redpanda.com/clusters 
+        Email: jaincapitaltrading@gmail.com
+        Password: JainCapitalTrading123
+
+    B. Go to "crypto-data" cluster
+    C. Look for "Topics" on left side menu
+    D. Open "{ticker}_tick_v1" and "{ticker}_ob_l2_v1"
+    E. Turn on auto-refresh and watch to be sure messages are uploaded properly
+
+
+
+ARTEMIS ENDPOINTS:
+-----------------
+List supported assets: https://api.artemisxyz.com/asset
+Find supported metrics: https://api.artemisxyz.com/supported-metrics
+Retrieve metrics: https://api.artemisxyz.com/data/{metricNames}
+
+COINAPI ENDPOINTS:
+-----------------
+Encrypted websocket access: wss://ws.coinapi.io/v1
+
+
+
+ORDER BOOK SPEC:
+---------------
+~~100-350 millisecond latnency end-to-end, averaging ~150
+~30-70 messages per second
+
+| Field Name      | Type   | Description                                                                                                                                               |
+| --------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `time_exchange` | `str`  | ISO 8601 timestamp when the exchange generated this order-book snapshot                                                                                   |
+| `time_coinapi`  | `str`  | ISO 8601 timestamp when CoinAPI received the snapshot                                                                                                     |
+| `asks`          | `list` | Array of ask levels, each an object with:<br>  • `price` (`float`): ask price<br>  • `size` (`float`): available volume<br>Sorted by **ascending** price  |
+| `bids`          | `list` | Array of bid levels, each an object with:<br>  • `price` (`float`): bid price<br>  • `size` (`float`): available volume<br>Sorted by **descending** price |
+| `symbol_id`     | `str`  | Market symbol in `EXCHANGE_SPOT_BASE_QUOTE` format (e.g. `COINBASE_SPOT_BTC_USD`)                                                                         |
+| `sequence`      | `int`  | Monotonically increasing sequence number for maintaining update order                                                                                     |
+| `type`          | `str`  | Message type, always `"book5"` for top-5 order-book updates                                                                                               |
+| `time_ingested` | `str`  | ISO 8601 timestamp when your application ingested this message (e.g. from WebSocket to Redpanda)                                                          |
+
+
+TICK SPEC:
+---------
+~~100-350 millisecond latnency end-to-end
+1 message per second
+
+| Field Name          | Type    | Description                                                                        |
+| ------------------- | ------- | ---------------------------------------------------------------------------------- |
+| `period_id`         | `str`   | Duration of the OHLCV interval (e.g., `"1SEC"`, `"1MIN"`, `"1DAY"`)                |
+| `time_period_start` | `str`   | ISO 8601 timestamp marking the start of the period                                 |
+| `time_period_end`   | `str`   | ISO 8601 timestamp marking the end of the period                                   |
+| `time_open`         | `str`   | ISO 8601 timestamp of the first trade in the period                                |
+| `time_close`        | `str`   | ISO 8601 timestamp of the last trade in the period                                 |
+| `price_open`        | `float` | Price of the first trade in the period                                             |
+| `price_high`        | `float` | Highest trade price during the period                                              |
+| `price_low`         | `float` | Lowest trade price during the period                                               |
+| `price_close`       | `float` | Price of the last trade in the period                                              |
+| `volume_traded`     | `float` | Total volume traded during the period                                              |
+| `trades_count`      | `int`   | Number of trades that occurred during the period                                   |
+| `symbol_id`         | `str`   | Market symbol in `EXCHANGE_SPOT_BASE_QUOTE` format (e.g. `COINBASE_SPOT_BTC_USDT`) |
+| `sequence`          | `int`   | Sequence number for maintaining message order                                      |
+| `type`              | `str`   | Always `"ohlcv"` for this message type                                             |
+
+
+POTENTIAL ADDITIONS:
+-------------------
+1. Create short-term 'sentiment' score based on bullish/bearish pressure using ask/bid spread
+2. Trades
+3. Level 3 orderbook
