@@ -98,5 +98,13 @@ data['donchian_lower'] = data['low'].rolling(window=LOOKBACK).min()
 data['donchian_mid'] = (data['donchian_upper'] + data['donchian_lower']) / 2
 data['donchian_width'] = data['donchian_upper'] - data['donchian_lower']
 
+ema1 = data['close'].ewm(span=4*LOOKBACK, adjust=False).mean()
+ema2 = ema1.ewm(span=4*LOOKBACK, adjust=False).mean()
+ema3 = ema2.ewm(span=4*LOOKBACK, adjust=False).mean()
+tema = 3*ema1 - 3*ema2 + ema3
+data['qema'] = tema.ewm(span=4*LOOKBACK, adjust=False).mean()
+data['qema_d1'] = data['qema'].diff(5)
+data['qema_d2'] = data['qema_d1'].diff(5)
+
 data.dropna(inplace=True)
-print(data.tail(50))
+print(data.columns)
