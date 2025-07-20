@@ -1,4 +1,5 @@
 import uuid
+import numpy as np
 
 class Order:
     def __init__(self, side, price, size, timestamp):
