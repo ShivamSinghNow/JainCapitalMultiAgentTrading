@@ -108,3 +108,58 @@ data['qema_d2'] = data['qema_d1'].diff(5)
 
 data.dropna(inplace=True)
 print(data.columns)
+# indicators, emas, rsi, macd, stochastic, money flow, atr, adx, donchian channel, 
+data[f'ema_{LOOKBACK}'] = data['ohlc'].ewm(span=LOOKBACK, min_periods=1, adjust=False).mean()
+data[f'ema_{2*LOOKBACK}'] = data['ohlc'].ewm(span=2*LOOKBACK, min_periods=1, adjust=False).mean()
+data[f'ema_{4*LOOKBACK}'] = data['ohlc'].ewm(span=4*LOOKBACK, min_periods=1, adjust=False).mean()
+data[f'ema_{10*LOOKBACK}'] = data['ohlc'].ewm(span=10*LOOKBACK, min_periods=1, adjust=False).mean()
+
+delta = data['ohlc'].diff()
+gain = np.where(delta>0, delta, 0)
+loss = np.where(delta<0, -delta, 0)
+avg_gain = pd.Series(gain, index=data.index).rolling(window=14).mean()
+avg_loss = pd.Series(loss, index=data.index).rolling(window=14).mean()
+rs = avg_gain / avg_loss
+data['rsi_14'] = 100 - (100 / (1 + rs))
+
+ema_fast = data['close'].ewm(span=12, adjust=False).mean()
+ema_slow = data['close'].ewm(span=26, adjust=False).mean()
+data['macd'] = ema_fast - ema_slow
+data['macd_signal'] = data['macd'].ewm(span=9, adjust=False).mean()
+data['macd_hist'] = data['macd'] - data['macd_signal']
+
+low_14 = data['low'].rolling(14).min()
+high_14 = data['high'].rolling(14).max()
+data['stoch_k'] = 100 * (data['close'] - low_14) / (high_14 - low_14)
+data['stoch_d'] = data['stoch_k'].rolling(3).mean()
+
+raw_money_flow = data['ohlc'] * data['volume']
+positive_flow = np.where(data['ohlc'] > data['ohlc'].shift(1), raw_money_flow, 0)
+negative_flow = np.where(data['ohlc'] < data['ohlc'].shift(1), raw_money_flow, 0)
+positive_mf = pd.Series(positive_flow, index=data.index).rolling(window=14).sum()
+negative_mf = pd.Series(negative_flow, index=data.index).rolling(window=14).sum()
+mf_ratio = positive_mf / negative_mf
+data['mfi_14'] = 100 - (100 / (1 + mf_ratio))
+
+high_low = data['high'] - data['low']
+high_close = np.abs(data['high'] - data['close'].shift())
+low_close = np.abs(data['low'] - data['close'].shift())
+tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+data['atr_14'] = tr.rolling(window=14).mean()
+
+plus_dm = data['high'].diff()
+minus_dm = data['low'].diff()
+plus_dm = np.where((plus_dm > minus_dm) & (plus_dm > 0), plus_dm, 0)
+minus_dm = np.where((minus_dm > plus_dm) & (minus_dm > 0), minus_dm, 0)
+plus_di = 100 * pd.Series(plus_dm, index=data.index).rolling(LOOKBACK).sum() / data['atr_14']
+minus_di = 100 * pd.Series(minus_dm, index=data.index).rolling(LOOKBACK).sum() / data['atr_14']
+dx = (abs(plus_di - minus_di) / (plus_di + minus_di)) * 100
+data['adx'] = dx.rolling(LOOKBACK).mean()
+
+data['donchian_upper'] = data['high'].rolling(window=LOOKBACK).max()
+data['donchian_lower'] = data['low'].rolling(window=LOOKBACK).min()
+data['donchian_mid'] = (data['donchian_upper'] + data['donchian_lower']) / 2
+data['donchian_width'] = data['donchian_upper'] - data['donchian_lower']
+
+data.dropna(inplace=True)
+print(data.tail(50))
