@@ -1,21 +1,30 @@
 import pandas as pd
 import numpy as np 
-from env import TradingEnvironment
+from strategy_tuning import LOOKBACK
 
-def momentum_strategy(row):
-    return
+class BaseStrategy:
+    def generate_signal(self, data):
+        raise NotImplementedError
     
-def grid_strategy(row):
-    return
+    def get_action(self, env, data_row):
+        raise NotImplementedError
+    
+class GridStrategy(BaseStrategy):
+    def generate_signal(self, data):
+        # returns "buy", "sell", or "hold"
+        ...
 
-def mean_reversion_strategy(row):
-    return
+class BreakoutStrategy(BaseStrategy):
+    def generate_signal(self, data):
+        # returns "buy", "sell", or "hold"
+        ...
 
-def lstm_prediction_strategy(row):
-    return
+class MeanReversionStrategy(BaseStrategy):
+    def generate_signal(self, data):
+        # returns "buy", "sell", or "hold"
+        ...
 
-def sentiment_strategy(row):
-    return
-
-def breakout_strategy(row):
-    return
+class MomentumStrategy(BaseStrategy):
+    def generate_signal(self, data):
+        # returns "buy", "sell", or "hold"
+        ...

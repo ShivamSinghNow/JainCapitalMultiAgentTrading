@@ -1,2 +1,3 @@
-data/BTCUSDT.csv
-data/*.csv
+data/binance_1s_data/
+data/btc_1s_dev.feather
+data/btc_1s_dev_features.feather

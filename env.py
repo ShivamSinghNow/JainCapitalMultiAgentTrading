@@ -1,50 +1,76 @@
 import uuid
+from datetime import datetime as dt
 import numpy as np
 
 class Order:
+    """
+    Order object to keep track of all orders and their atributes
+    """
     def __init__(self, side, price, size, timestamp):
         self.id = uuid.uuid4()
-        self.side = side
-        self.price = price
-        self.size = size
-        self.timestamp = timestamp
+        self.side = side # side of trade e.g. buy/sell
+        self.price = price # price of order
+        self.size = size # size of order
+        self.timestamp = timestamp # timestamp when the order was submitted
 
 class TradingEnvironment():
+    """
+    Environment where all trades and balances are kept track of
+    """
     def __init__(self, starting_cash=10000):
-        self.inventory = 0
-        self.cash = starting_cash
-        self.trade_log = []
-        self.orders = []
+        self.inventory = 0 # number of shares currently owned (will typically be a decimal
+        self.cash = starting_cash # starting balance
+        self.trade_log = [] # trade log of all completed trades
+        self.orders = [] # list of all active orders
 
-    def market_buy(self, price, size, timestamp):
+    def market_buy(self, price, size):
+        """
+        Buys at given price and then updates inventory and cash respectively
+        Appends trade log with timestamp, buy, price bought at and # of shares bought
+        """
         cost = price * size
         if self.cash >= cost:
             self.inventory += size
             self.cash -= cost
-            self.trade_log.append((timestamp, 'buy', price, size))
+            self.trade_log.append((dt.now().timestamp(), 'buy', price, size))
         else:
             print("Insufficient cash")
 
-    def market_sell(self, price, size, timestamp):
+    def market_sell(self, price, size):
+        """
+        Sells at given price and then updates inventory and cash respectively
+        Appends trade log with timestamp, sell, price bought at and # of shares bought
+        """
         if self.inventory >= size:
             self.cash += price * size
             self.inventory -= size
-            self.trade_log.append((timestamp, 'sell', price, size))
+            self.trade_log.append((dt.now().timestamp(), 'sell', price, size))
         else:
             print("Not enough inventory")
 
-    def limit_order(self, price, side, size, timestamp):
-        self.orders.append(Order(f'{side}', price, size, timestamp))
+    def limit_order(self, price, side, size, strategy):
+        """
+        Creates order object and appends orders list
+        """
+        self.orders.append(Order(f'{side}', price, size, dt.now().timestamp()), strategy)
 
-    def cancel_order(self):
+    def cancel_order(self, order):
+        """
+        Removes a given order from thew active orders list
+        """
+        self.orders.remove(order)
         return
 
-    def update_orders(self, current_price, timestamp):
+    def update_orders(self, current_price):
+        """
+        Updates all orders in current orders list and executes them respectively
+        Then deletes filled orders from the order list
+        """
         filled_orders = []
 
         for order in self.orders:
             if order.price >= current_price and order.side == 'buy':
-                self.market_buy(order.price, order.size, timestamp)
+                self.market_buy(order.price, order.size)
             elif order.price <= current_price and order.side == 'sell':
                 self.market_sell(order.price, order.size)
             filled_orders.append(order)
@@ -53,4 +79,7 @@ class TradingEnvironment():
             self.orders.remove(order)
 
     def current_value(self, price):
+        """
+        Retrieves the current value of cash + shares
+        """
         return self.cash + self.inventory * price
