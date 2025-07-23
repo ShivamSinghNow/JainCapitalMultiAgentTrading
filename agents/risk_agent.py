@@ -5,3 +5,6 @@ class RiskAgent:
 
     def tp_sl(self):
         return
+    
+    def get_size(self):
+        return

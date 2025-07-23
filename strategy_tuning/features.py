@@ -107,4 +107,8 @@ data['qema_d1'] = data['qema'].diff(5)
 data['qema_d2'] = data['qema_d1'].diff(5)
 
 data.dropna(inplace=True)
+
+quarter = len(data) // 4
 data.to_feather('data/btc_1s_dev_features.feather')
+data.iloc[:quarter*3].to_feather('data/btc_train.feather')
+data.iloc[quarter*3:].to_feather('data/btc_test.feather')

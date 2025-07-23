@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime as dt
-import numpy as np
 
 class Order:
     """
@@ -52,7 +51,7 @@ class TradingEnvironment():
         """
         Creates order object and appends orders list
         """
-        self.orders.append(Order(f'{side}', price, size, dt.now().timestamp()), strategy)
+        self.orders.append((Order(f'{side}', price, size, dt.now().timestamp()), strategy))
 
     def cancel_order(self, order):
         """
