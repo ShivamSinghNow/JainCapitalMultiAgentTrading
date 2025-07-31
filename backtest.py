@@ -3,7 +3,7 @@ from agents.strat_agent import StrategySelector
 import pandas as pd
 import joblib as jl
 
-bundle = jl.load('agents/regime_hmm_scaler.pkl')
+bundle = jl.load('agents/models/regime_hmm_scaler.pkl')
 model = bundle['model']
 scaler = bundle['scaler']
 pca = bundle['pca']
@@ -21,26 +21,27 @@ class Backtester:
         """
         Runs the backtest by iterating through the data and executing strategies
         """
-        for i in range(60, 6001):
-            row = self.data.iloc[i].drop(['regime'])
-            lookback_data = self.data.iloc[i-60:i]
+        for i in range(60, 1001):
+            row = self.data.iloc[i]
 
-            signals = self.selector.update(i, row)
+            signals = self.selector.update(i, row.drop(['regime']))
             for strat, signal in signals:
                 print(f"Strategy: {strat.__class__.__name__}, Signal: {signal}")
-                strat.action(signal, lookback_data)
+                strat.action(signal, row)
 
             self.env.update_orders(row['close'])
 
-            print(self.active_strategies)
-            print(len(self.env.orders))
-            print(self.env.trade_log)
-            print(f"Cash: {self.env.cash}, Inventory: {self.env.inventory}, Total Value: {self.env.cash + self.env.inventory * row['close']}")
+            if i % 200 == 0:
+                print('\n--------------------------------------------')
+                print(self.active_strategies)
+                print(f'\nTick: {i}\nClose: {row["close"]}\n')
+                print(f'Orders: {len(self.env.orders)}\nCash: {self.env.cash}\nInventory: {self.env.inventory}\nTotal Value: {self.env.cash + self.env.inventory * row["close"]}')
+                print('--------------------------------------------')
 
 
 if __name__ == '__main__':
     data = pd.read_feather('data/btc_test.feather')
     data['regime'] = 'low_vol'  # Default regime
-
+    
     bt = Backtester(data)
     bt.run()

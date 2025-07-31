@@ -17,7 +17,7 @@ class TradingEnvironment():
     """
     Environment where all trades and balances are kept track of
     """
-    def __init__(self, backtester, starting_cash=10000):
+    def __init__(self, backtester, starting_cash=100000):
         self.inventory = 0 # number of shares currently owned (will typically be a decimal
         self.cash = starting_cash # starting balance
         self.trade_log = [] # trade log of all completed trades
@@ -35,8 +35,11 @@ class TradingEnvironment():
             self.inventory += size
             self.cash -= cost
             self.trade_log.append((dt.now().timestamp(), 'buy', price, size))
+            print(f"Order filled: buy {size} at {price}")
+            return True
         else:
             print("Insufficient cash")
+            return False
 
 
     def market_sell(self, price, size):
@@ -48,8 +51,11 @@ class TradingEnvironment():
             self.cash += price * size
             self.inventory -= size
             self.trade_log.append((dt.now().timestamp(), 'sell', price, size))
+            print(f"Order filled: sell {size} at {price}")
+            return True
         else:
             print("Not enough inventory")
+            return False
 
 
     def limit_order(self, side, price, size, strategy):
@@ -58,7 +64,6 @@ class TradingEnvironment():
         """
         self.orders.append(Order(side=f'{side}', price=price, size=size, timestamp=dt.now().timestamp(), strategy=strategy))
         print(f"Order created: {side} {size} at {price} for {strategy}")
-        print(f"Current orders: {len(self.orders)}")
 
 
     def cancel_order(self, order):
@@ -83,13 +88,13 @@ class TradingEnvironment():
                 continue
 
             if order.price >= current_price and order.side == 'buy':
-                self.market_buy(order.price, order.size)
-                filled_orders.append(order)
-                print(f"Order filled: {order.side} {order.size} at {order.price}")
+                filled = self.market_buy(order.price, order.size)
+                if filled:
+                    filled_orders.append(order)
             elif order.price <= current_price and order.side == 'sell':
-                self.market_sell(order.price, order.size)
-                filled_orders.append(order)
-                print(f"Order filled: {order.side} {order.size} at {order.price}")
+                filled = self.market_sell(order.price, order.size)
+                if filled:
+                    filled_orders.append(order)
 
         for order in filled_orders + canceled_orders:
             if order in self.orders:

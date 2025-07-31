@@ -46,15 +46,21 @@ class StrategySelector:
 
         if self.counter == 60 or self.current_strategy == None:
             self.current_strategy = self.select_strategy(i, row)
+
             if not any(t[0] == self.current_strategy for t in self.bt.active_strategies):
                 self.bt.active_strategies.append((self.current_strategy, i))
+            else:
+                for j, (strategy, _) in enumerate(self.bt.active_strategies):
+                    if strategy == self.current_strategy:
+                        self.bt.active_strategies[j] = (self.current_strategy, i)
+                        break
 
             print(f"Strategy changed to {self.current_strategy.__class__.__name__}")
             self.counter = 0
 
         signals = []
         for strat in self.bt.active_strategies:
-                if i - strat[1] >= 100:
+                if i - strat[1] >= 180: 
                     self.bt.active_strategies.remove(strat)
                     continue
                 signals.append((strat[0], strat[0].generate_signal(row)))
